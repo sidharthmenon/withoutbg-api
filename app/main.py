@@ -93,6 +93,16 @@ async def startup_event():
     else:
         print("⚠ API authentication disabled (no API_TOKEN in environment)")
 
+@app.get("/")
+async def health_check():
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "version": __version__,
+        "service": "withoutbg-api",
+        "models_loaded": _model is not None
+    }
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -173,41 +183,6 @@ async def remove_background_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
-
-# Mount static files (only if directory exists - for production)
-if STATIC_DIR.exists():
-    # Serve static assets (js, css, images, etc.)
-    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
-    
-    # Root route - serve index.html
-    @app.get("/")
-    async def root():
-        """Serve the React frontend index.html at root."""
-        index_path = STATIC_DIR / "index.html"
-        if index_path.exists():
-            return FileResponse(index_path)
-        raise HTTPException(status_code=404, detail="Frontend not found")
-    
-    # Catch-all route for React SPA - must be last
-    @app.get("/{full_path:path}")
-    async def serve_frontend(full_path: str):
-        """Serve the React frontend for all non-API routes."""
-        # Don't serve frontend for API routes
-        if full_path.startswith("api/"):
-            raise HTTPException(status_code=404, detail="API endpoint not found")
-        
-        # Try to serve the requested file
-        file_path = STATIC_DIR / full_path
-        if file_path.is_file():
-            return FileResponse(file_path)
-        
-        # Otherwise, serve index.html (SPA routing)
-        index_path = STATIC_DIR / "index.html"
-        if index_path.exists():
-            return FileResponse(index_path)
-        
-        raise HTTPException(status_code=404, detail="Not found")
-
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
