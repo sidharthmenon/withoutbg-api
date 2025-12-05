@@ -1,15 +1,44 @@
-name: Docker Image CI
+name: Build & Publish Docker Image
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write   # REQUIRED for GHCR push
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Log in to GitHub Container Registry
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set IMAGE NAME (repo owner lowercased)
+      - name: Set image name
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/withoutbg-api" >> $GITHUB_ENV
+
+      # Build image
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t $IMAGE_NAME:latest \
+            .
+
+      # Push image
+      - name: Push Docker image
+        run: |
+          docker push $IMAGE_NAME:latest
