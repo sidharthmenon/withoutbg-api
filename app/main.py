@@ -43,35 +43,34 @@ API_KEY_NAME = "X-API-Key"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 # Get API token from environment
-API_TOKEN = os.getenv("API_TOKEN")
+raw_tokens = os.getenv("API_TOKEN", "")
+API_TOKENS = {t.strip() for t in raw_tokens.split(",") if t.strip()}  # convert to set for fast lookup
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
-  """
-  Verify API key from request header.
-  
-  Args:
-      api_key: API key from X-API-Key header
-      
-  Raises:
-      HTTPException: If API key is missing or invalid
-  """
-  if not API_TOKEN:
-      # If no API_TOKEN is set in environment, allow access (development mode)
-      return True
-  
-  if api_key is None:
-      raise HTTPException(
-          status_code=401,
-          detail="API key is missing. Please provide X-API-Key header.",
-      )
-  
-  if api_key != API_TOKEN:
-      raise HTTPException(
-          status_code=403,
-          detail="Invalid API key",
-      )
-  
-  return True
+    """
+    Verify API key from request header.
+    Supports multiple keys provided as CSV in API_TOKENS env.
+    """
+    # If no tokens set → allow all requests (dev mode)
+    if not API_TOKENS:
+        print("⚠ WARNING: No API_TOKENS set. API authentication is DISABLED.")
+        return True
+
+    # No token provided
+    if api_key is None:
+        raise HTTPException(
+            status_code=401,
+            detail="API key missing. Provide header: X-API-Key",
+        )
+
+    # Token invalid
+    if api_key not in API_TOKENS:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid API key",
+        )
+
+    return True
 
 
 # Static files directory (frontend build)
@@ -89,7 +88,7 @@ async def startup_event():
     print("✓ Models loaded and ready for inference!")
 
     # Log API token status
-    if API_TOKEN:
+    if API_TOKENS:
         print(f"✓ API authentication enabled (token configured)")
     else:
         print("⚠ API authentication disabled (no API_TOKEN in environment)")
