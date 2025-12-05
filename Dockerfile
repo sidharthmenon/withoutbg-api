@@ -14,7 +14,6 @@ RUN uv sync --frozen --no-dev
 
 # Copy source code
 COPY app ./app
-COPY models ./models
 
 # Stage 2: Runtime
 FROM python:3.12-slim
@@ -33,7 +32,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code
 COPY app ./app
-COPY models ./models
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
