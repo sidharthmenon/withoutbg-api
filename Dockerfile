@@ -25,21 +25,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy the virtual environment
-COPY --from=builder /.venv /.venv
+COPY --from=builder /app /app
 
 # Add .venv to PATH
-ENV PATH="/.venv/bin:$PATH"
-
-# Copy application code
-COPY app ./app
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
-
-ENV WITHOUTBG_DEPTH_MODEL_PATH=/app/models/checkpoints/depth_anything_v2_vits_slim.onnx
-ENV WITHOUTBG_ISNET_MODEL_PATH=/app/models/checkpoints/isnet.onnx
-ENV WITHOUTBG_MATTING_MODEL_PATH=/app/models/checkpoints/focus_matting_1.0.0.onnx
-ENV WITHOUTBG_REFINER_MODEL_PATH=/app/models/checkpoints/focus_refiner_1.0.0.onnx
 
 EXPOSE 8000
 
