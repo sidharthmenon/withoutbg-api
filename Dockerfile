@@ -25,10 +25,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy the virtual environment
-COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /.venv /.venv
 
 # Add .venv to PATH
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/.venv/bin:$PATH"
 
 # Copy application code
 COPY app ./app
