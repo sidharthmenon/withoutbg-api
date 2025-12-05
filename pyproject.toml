@@ -1,0 +1,19 @@
+[project]
+name = "withoutbg-backend"
+version = "1.2.0"
+description = "FastAPI backend for withoutbg web application"
+requires-python = ">=3.12"
+dependencies = [ # Install from ../../../packages/python in development
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "pillow>=8.0.0",
+    "withoutbg>=1.0.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
