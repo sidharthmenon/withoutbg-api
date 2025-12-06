@@ -24,6 +24,14 @@ For more details: https://github.com/withoutbg/withoutbg
         PORT: "${PORT}"
 ```
 
+## .env file
+
+```
+PORT=8000
+PYTHONUNBUFFERED=1
+API_TOKEN=ABC,123
+```
+
 ## License
 
 Apache 2.0 - See parent LICENSE file
